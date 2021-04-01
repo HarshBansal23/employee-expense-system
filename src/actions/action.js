@@ -25,7 +25,6 @@ export const addExpenseClaim = (payload) => {
 
 }
 
-
 export const findExpenseClaims = (payload) => {
     return {type: "FIND_EXPENSE_CLAIMS", payload}
 }
@@ -46,8 +45,35 @@ export const fetchExpenseClaims = () => {
                 console.log(data);
                 dispatch(findExpenseClaims(data));
             })
-        
     }
-
 }
+
+const removeExpenseClaim = (payload) => {
+    return { type: "DELETE_EXPENSE_CLAIM", payload };
+  };
+  
+  export const deleteExpenseClaim = (id) => {
+    const requestOptions = {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    };
+    return (dispatch) => {
+      let message = "";
+      fetch("http://localhost:8081/api/v1/expenseClaim/" + id, requestOptions)
+        .then((res) => {
+          console.log(res);
+  
+          if (res.status === 200) {
+            message = "succesfully deleted expense claim";
+          } else message = "failed";
+  
+          return res.json();
+        })
+        .then((data) => {
+          console.log(data);
+          dispatch(removeExpenseClaim({ expenseClaim: data, message }));
+        });
+    };
+  };
+  
 

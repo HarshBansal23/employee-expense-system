@@ -29,7 +29,7 @@ class ViewExpenseClaims extends Component {
           endDate: claim.endDate,
           status: claim.status,
           expense: claim.expense.expenseType,
-          project: claim.project.projectDescription,
+          project: claim.project.title,
         }
       )
     })
