@@ -11,15 +11,15 @@ import {
 export default function ExpenseClaim() {
   return (
     <div>
-      {/* <div>
+      <div>
         <AddExpenseClaim />
-      </div> */}
+      </div>
       {/* <div>
         <EditExpenseClaim />
       </div> */}
-      <div>
+      {/* <div>
         <DataTable />
-      </div>
+      </div> */}
     </div>
   );
 }

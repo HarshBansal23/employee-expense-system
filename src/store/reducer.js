@@ -9,7 +9,7 @@ const reducer = (state = initialState, { type, payload }) => {
     switch (type) {
         
     case "ADD_EXPENSE_CLAIM":
-        return {claims: state.claims, expenses: payload, projects : state.projects};
+        return {claims: state.claims, expenses: state.expenses, projects : state.projects};
 
     case "FIND_PROJECTS":
         console.log(payload)

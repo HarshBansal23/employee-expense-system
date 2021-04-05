@@ -9,6 +9,9 @@ import TextField from '@material-ui/core/TextField';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
+import {
+    Link
+  } from "react-router-dom";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -168,8 +171,9 @@ export default function AddExpenseClaim(){
                         </Grid>
                     </Grid>
 
-                    <Button fullWidth variant="contained" color="primary" className={classes.submit} onClick={addExpenseClaim}>Add Expense Claim</Button>
-
+                    <Link to="/">
+                        <Button fullWidth variant="contained" color="primary" className={classes.submit} onClick={addExpenseClaim}>Add Expense Claim</Button>
+                    </Link>
                 </form>
             </div>
         </Container>
