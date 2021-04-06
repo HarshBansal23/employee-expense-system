@@ -165,7 +165,7 @@ export const deleteExpenseClaim = (id) => {
         dispatch(removeExpenseClaim(id));
       })
     .catch((error) => {
-      console.error('Error:', error);
+      console.error('Error');
     });
   };
 };

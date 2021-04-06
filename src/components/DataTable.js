@@ -48,6 +48,7 @@ export default function ViewExpenseClaims(){
   },[])
 
   useEffect(()=>{
+    if(claims!= null){
     const rows = claims.map((claim, i) => {
       return (
         { id: claim.expenseCodeId,
@@ -61,7 +62,7 @@ export default function ViewExpenseClaims(){
         }
       )
     })
-    setRows(rows)
+    setRows(rows)}
   },[claims])
 
   const handleDelete = (id) =>{
@@ -87,10 +88,12 @@ export default function ViewExpenseClaims(){
             { field: 'action', headerName: 'Action', width: 150,
             renderCell: (params) => (
               <strong>
+                <Link to="/">
                 <IconButton aria-label="delete" className={classes.deleteBtn} onClick={() => handleDelete(params.value)}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
-                <Link to={`/edit/${params.value}`}>
+                </Link>
+                <Link to={"/edit/"+params.value}>
                   <IconButton aria-label="Edit" className={classes.editBtn}>
                     <EditIcon fontSize="small" />
                   </IconButton>

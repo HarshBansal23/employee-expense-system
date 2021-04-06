@@ -27,7 +27,7 @@ const reducer = (state = initialState, { type, payload }) => {
         return { updated: true};
 
     case "DELETE_EXPENSE_CLAIM":
-        let filteredList = state.claims.filter((claim)=>{
+        let filteredList = state.claims.filter((claim) => {
             if(claim.id !== payload.id){
                 return claim;
             }

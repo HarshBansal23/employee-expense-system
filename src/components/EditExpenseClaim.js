@@ -8,7 +8,9 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import {Link,useRouteMatch} from 'react-router-dom'
+import {
+    Link
+} from "react-router-dom";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -28,8 +30,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function EditExpenseClaim({match}) {
 
-    // let id = match.params.id
-    // console.log(id)
+    let id = match.params.id
 
     const classes = useStyles()
 
@@ -42,8 +43,6 @@ export default function EditExpenseClaim({match}) {
     const dispatch = useDispatch();  
 
     useEffect(() => {
-        let id = match.params.id
-        console.log(id)
         dispatch(actions.fetchClaim(id))
     },[]);
 
@@ -73,7 +72,7 @@ export default function EditExpenseClaim({match}) {
     const handleSubmit= (e) => {
         e.preventDefault();
         const updateRequest = {
-            id: claim.id,
+            id: id,
             expenseAmount: expenseAmount,
             startDate: changeDateFormat(startDate),
             endDate: changeDateFormat(endDate)
@@ -93,7 +92,7 @@ export default function EditExpenseClaim({match}) {
                 <Grid container spacing={2}>
                 <Grid item xs={12}>
                         <TextField name="id" onChange={handleChange} fullWidth required disabled
-                            
+                            value={id}
                             id="id"
                             type="number"
                             InputLabelProps={{
@@ -124,13 +123,14 @@ export default function EditExpenseClaim({match}) {
                         <Typography>End Date</Typography>
                         <input type="date" value={endDate} required name="endDate" className="form-control" placeholder="Enter End Date" aria-label="Username" onChange={handleChange}/>
                     </Grid>
-
-                    <Button type="submit"
-                        variant="contained"
-                        color="primary"
-                        className={classes.submit}
-                        onClick={handleSubmit}
-                    >Update</Button>
+                    <Link to="/">
+                        <Button type="submit"
+                            variant="contained"
+                            color="primary"
+                            className={classes.submit}
+                            onClick={handleSubmit}
+                        >Update</Button>
+                    </Link>
                 </Grid>
             </form>
         </div>
