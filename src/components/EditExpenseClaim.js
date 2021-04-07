@@ -13,7 +13,12 @@ import MuiAlert from "@material-ui/lab/Alert";
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { format } from "date-fns";
+import DateFnsUtils from '@date-io/date-fns';
+import 'date-fns';
+import {
+    MuiPickersUtilsProvider,
+    KeyboardDatePicker,
+} from '@material-ui/pickers';
 import {
     Link
 } from "react-router-dom";
@@ -29,8 +34,17 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         marginTop: theme.spacing(3),
     },
-    submit: {
-        margin: theme.spacing(3, 4, 2),
+    cancel: {
+        margin: theme.spacing(3, 4, 2, 0),
+        bottom: 0,
+        left: 0,
+    },
+    update: {
+        margin: theme.spacing(3, 4, 2, 21),
+    },
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: "#fff",
     },
 }));
 
@@ -54,11 +68,15 @@ export default function EditExpenseClaim({ match }) {
 
     const claim = useSelector(state => state.claim)
 
+    const updated = useSelector((state) => state.updated);
+
     const [expenseAmount, setAmount] = React.useState(0)
-    const [startDate, setSd] = React.useState('')
-    const [endDate, setEd] = React.useState('')
+    const [startDate, setSd] = React.useState(new Date())
+    const [endDate, setEd] = React.useState(new Date())
     const [openSnack, setOpenSnack] = React.useState(false)
     const [open, setOpen] = React.useState(false)
+
+    const history = useHistory();
 
     const [errors, setErrors] = React.useState({
         expenseAmount: ""
@@ -69,19 +87,30 @@ export default function EditExpenseClaim({ match }) {
         dispatch(actions.fetchClaim(id))
     }, []);
 
-    const history = useHistory()
+    useEffect(() => {
+        if (updated) {
+            console.log(history);
+            history.goBack();
+        }
+    }, [updated, history]);
+
+    useEffect(() => {
+        if (alert && alert.type === "error") {
+            setOpen(false);
+            setOpenSnack(true);
+        }
+    }, [alert]);
+
     const handleCancel = () => {
         console.log(history)
         history.goBack()
     }
 
     useEffect(() => {
-
         if (alert) {
             setOpen(false)
             setOpenSnack(true)
         }
-
     }, [alert]);
 
     const handleCloseSnack = () => {
@@ -97,9 +126,27 @@ export default function EditExpenseClaim({ match }) {
     }, [claim]);
 
     const changeDateFormat = (date) => {
-        date = date.split('-')
-        return (date[1] + "/" + date[2] + "/" + date[0])
+        if (((date.getMonth() + 1) < 10) && (date.getDate() < 10)) {
+            return "0" + (date.getMonth() + 1) + "/" + "0" + date.getDate() + "/" + date.getFullYear();
+        }
+        else if (((date.getMonth() + 1) < 10) && (date.getDate() > 9)) {
+            return "0" + (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear();
+        }
+        else if (((date.getMonth() + 1) > 9) && (date.getDate() < 10)) {
+            return (date.getMonth() + 1) + "/" + "0" + date.getDate() + "/" + date.getFullYear();
+        }
+        else {
+            return (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear();
+        }
     }
+
+    const handleStartDate = (date) => {
+        setSd(changeDateFormat(date));
+    };
+
+    const handleEndDate = (date) => {
+        setEd(changeDateFormat(date));
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -109,36 +156,46 @@ export default function EditExpenseClaim({ match }) {
             err.expenseAmount =
                 value >= 0 ? "" : "Amount must be greater than Zero!!!";
         }
-        else if (name === 'startDate')
-            setSd(value)
-        else if (name === 'endDate')
-            setEd(value)
     }
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const updateRequest = {
-            id: id,
-            expenseAmount: expenseAmount,
-            startDate: changeDateFormat(startDate),
-            endDate: changeDateFormat(endDate)
+        if (validateForm(errors)) {
+            if (expenseAmount && startDate && endDate) {
+                setOpen(true);
+                const updateRequest = {
+                    id: id,
+                    expenseAmount: expenseAmount,
+                    startDate: startDate,
+                    endDate: endDate
+                };
+                dispatch(actions.editClaim(updateRequest));
+            } else {
+                window.alert("Fields cannot be null");
+            }
+        } else {
+            window.alert("Invalid form");
         }
-        dispatch(actions.editClaim(updateRequest))
-    }
+    };
 
 
     return (
         <Container component="main" maxWidth="xs">
-            <Snackbar
-                open={openSnack}
-                autoHideDuration={6000}
-                onClose={handleCloseSnack}
-            >
-                <Alert onClose={handleCloseSnack} severity={alert ? alert.type : 'success'}>
-                    {alert ? alert.message : 'sample'}
-                </Alert>
-            </Snackbar>
-            <Backdrop className={classes.backdrop} open={open} >
+            {alert && (
+                <Snackbar
+                    open={openSnack}
+                    autoHideDuration={6000}
+                    onClose={handleCloseSnack}
+                >
+                    <Alert
+                        onClose={handleCloseSnack}
+                        severity={alert ? alert.type : "success"}
+                    >
+                        {alert ? alert.message : "sample"}
+                    </Alert>
+                </Snackbar>
+            )}
+            <Backdrop className={classes.backdrop} open={open}>
                 <CircularProgress color="inherit" />
             </Backdrop>
             <CssBaseline />
@@ -146,7 +203,7 @@ export default function EditExpenseClaim({ match }) {
                 <Typography component="h1" variant="h5">
                     Edit claim
                 </Typography>
-                <form className={classes.form}>
+                <form className={classes.form} noValidate onSubmit={handleSubmit}>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
                             <TextField name="id" onChange={handleChange} fullWidth required disabled
@@ -191,36 +248,50 @@ export default function EditExpenseClaim({ match }) {
 
                         <Grid item xs={12}>
                             <Typography>Start Date</Typography>
-                            <input
-                                type="date"
-                                value={startDate} required name="startDate" className="form-control" placeholder="Enter Start Date" onChange={handleChange}
-                            />
+                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                <KeyboardDatePicker required
+                                    fullWidth
+                                    id="start date"
+                                    value={startDate}
+                                    name='startDate'
+                                    onChange={handleStartDate}
+                                    KeyboardButtonProps={{
+                                        'aria-label': 'change date',
+                                    }}
+                                />
+                            </MuiPickersUtilsProvider>
                         </Grid>
 
                         <Grid item xs={12}>
                             <Typography>End Date</Typography>
-                            <input
-                                type="date"
-                                value={endDate} required name="endDate" className="form-control" placeholder="Enter End Date" aria-label="Username" onChange={handleChange}
-                                min={startDate}
-                            />
+                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                <KeyboardDatePicker required
+                                    minDate={startDate}
+                                    fullWidth
+                                    id="end date"
+                                    value={endDate}
+                                    name='endDate'
+                                    onChange={handleEndDate}
+                                    KeyboardButtonProps={{
+                                        'aria-label': 'change date',
+                                    }}
+                                />
+                            </MuiPickersUtilsProvider>
                         </Grid>
-                        <Link to="/">
-                            <Button type="submit"
-                                variant="contained"
-                                color="primary"
-                                className={classes.submit}
-                                onClick={handleSubmit}
-                            >Update</Button>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                className={classes.submit}
-                                onClick={handleCancel}
-                            >
-                                Cancel
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.cancel}
+                            onClick={handleCancel}
+                        >
+                            Cancel
                         </Button>
-                        </Link>
+                        <Button type="submit"
+                            variant="contained"
+                            color="primary"
+                            className={classes.update}
+                            onClick={handleSubmit}
+                        >Update</Button>
                     </Grid>
                 </form>
             </div>

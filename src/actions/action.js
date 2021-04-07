@@ -1,23 +1,35 @@
-export const saveExpenseClaim = (payload) => {
-  return { type: "ADD_EXPENSE_CLAIM", payload: { alert: { type: 'success', message: "Successfully added expense claim!!" } } }
+export const saveExpenseClaim = (claim) => {
+  return { type: "ADD_EXPENSE_CLAIM", payload: {claim, added: true, alert: { type: 'success', message: "Successfully added expense claim!!" } } }
 }
 
-export const addExpenseClaim = (payload) => {
+export const addExpenseClaim = (claim) => {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(claim)
   };
 
   return dispatch => {
+    let code = 0;
     fetch('http://localhost:8081/api/v1/expenseClaim/', requestOptions)
       .then(res => {
-        console.log(res)
-        if (res.status === 201) {
-          console.log("success");
-          dispatch(saveExpenseClaim())
+        code = res.status
+        if (res.status !== 201) {
+          return res.text()
         }
+        return res.json()
       })
+      .then(res => {
+        console.log(res)
+        if (code === 201)
+          dispatch(saveExpenseClaim(res));
+        else
+          return Promise.reject(res)
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        dispatch({ type: "ADD_EXPENSE_CLAIM_FAILED", payload: { alert: { type: 'error', message: error } } })
+      });
   }
 }
 
@@ -70,6 +82,8 @@ export const fetchExpenseClaims = () => {
       .then(data => {
         console.log(data);
         dispatch(findExpenseClaims(data));
+      }).catch((error) => {
+        console.error('Error:', error);
       })
   }
 }
@@ -123,8 +137,8 @@ export const fetchExpenses = () => {
 }
 
 
-export const updateClaim = () => {
-  return { type: "UPDATE_CLAIM", payload: { alert: { type: 'success', message: "Successfully update expense claim!!" } } }
+export const updateClaim = (type, alert) => {
+  return { type, payload: { alert } }
 }
 
 export const editClaim = (updateRequest) => {
@@ -137,20 +151,29 @@ export const editClaim = (updateRequest) => {
   };
 
   return dispatch => {
+    let code = 0
     fetch('http://localhost:8081/api/v1/expenseClaim/', requestOptions)
       .then(res => {
         console.log(res);
-        dispatch(updateClaim());
+        code = res.status;
+        if (code !== 204) {
+          return res.text()
+        }
+        dispatch(updateClaim('UPDATE_CLAIM', { type: 'success', message: 'updated claim successfully' }));
+      })
+      .then(res => {
+        if (code !== 204)
+          return Promise.reject(res)
       })
       .catch((error) => {
-        console.error('Error:', error);
+        dispatch(updateClaim('UPDATE_CLAIM_FAILED', { type: 'error', message: error }));
       });
   }
 }
 
 
-const removeExpenseClaim = (payload) => {
-  return { type: "DELETE_EXPENSE_CLAIM", payload };
+const removeExpenseClaim = (id) => {
+  return { type: "DELETE_EXPENSE_CLAIM", payload: { id, alert: { type: 'success', message: 'Claim deleted!' } } };
 };
 
 export const deleteExpenseClaim = (id) => {
@@ -162,11 +185,13 @@ export const deleteExpenseClaim = (id) => {
   return (dispatch) => {
     fetch("http://localhost:8081/api/v1/expenseClaim/" + id, requestOptions)
       .then((res) => {
-        console.log(res);
+        if (res.status !== 204)
+          return Promise.reject("Couldn't delete!");
         dispatch(removeExpenseClaim(id));
       })
       .catch((error) => {
-        console.error('Error');
+        console.error('Error:', error);
+        dispatch({ type: "DELETE_EXPENSE_CLAIM_FAILED", payload: { alert: { type: 'error', message: error } } })
       });
   };
 };

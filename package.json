@@ -14,9 +14,9 @@
     "@testing-library/user-event": "^12.8.3",
     "date-fns": "^2.19.0",
     "icons": "^1.0.0",
-    "moment": "^2.29.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-number-format": "^4.5.3",
     "react-redux": "^7.2.3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
@@ -48,5 +48,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@iconify-icons/mdi": "^1.1.13",
+    "@iconify/react": "^1.1.4"
   }
 }

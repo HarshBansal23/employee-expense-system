@@ -1,9 +1,9 @@
 import logo from './logo.svg';
 import './App.css';
-import ExpenseClaim from './components/ExpenseClaim.js';
 import DataTable from './components/DataTable.js';
 import AddExpenseClaim from './components/AddExpenseClaim.js';
 import EditExpenseClaim from './components/EditExpenseClaim.js';
+import AddBoxIcon from '@material-ui/icons/AddBox';
 import Button from '@material-ui/core/Button';
 import {
   BrowserRouter as Router,
@@ -16,27 +16,26 @@ function App() {
   return (
     <Router>
       <div>
-        <div>
+        {/* <div>
         <Button color="primary">
           <Link to="/">View Claims</Link>
           </Button>
-        </div>
-        <div>
-        <Button color="primary">
-          <Link to="/add">Add Claim</Link>
+        </div> */}
+        {/* <div>
+          <Button color="primary">
+            <Link to="/add">
+              <AddBoxIcon></AddBoxIcon>Add Claim</Link>
           </Button>
-        </div>
+        </div> */}
       </div>
-        <Switch>
-          <Route path="/add">
-            <AddExpenseClaim />
-          </Route>
-          <Route path="/edit/:id" component={EditExpenseClaim}>
-          </Route>
-          <Route path="/">
-            <DataTable />
-          </Route>
-        </Switch>
+      <Switch>
+        <Route path="/add" component={AddExpenseClaim}>
+        </Route>
+        <Route path="/edit/:id" component={EditExpenseClaim}>
+        </Route>
+        <Route path="/" component={DataTable}>
+        </Route>
+      </Switch>
 
     </Router>
   );

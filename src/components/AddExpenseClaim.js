@@ -36,8 +36,15 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         marginTop: theme.spacing(3),
     },
-    submit: {
-        margin: theme.spacing(3, 4, 2),
+    cancel: {
+        margin: theme.spacing(3, 4, 2, 0),
+    },
+    add: {
+        margin: theme.spacing(3, 1, 2, 11),
+    },
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: "#fff",
     },
 }));
 
@@ -50,7 +57,6 @@ const validateForm = (errors) => {
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
-
 
 export default function AddExpenseClaim() {
 
@@ -80,16 +86,16 @@ export default function AddExpenseClaim() {
 
     const alert = useSelector(state => state.alert)
 
+    const added = useSelector(state => state.added)
+
     const history = useHistory();
 
     const addExpenseClaim = () => {
-
         if (validateForm(errors)) {
             console.log("adding claim....");
-
             if (amount && sd && ed && expense && project) {
                 setOpen(true)
-                var claim = {
+                const claim = {
                     amount: parseInt(amount),
                     startDate: sd,
                     endDate: ed,
@@ -97,7 +103,6 @@ export default function AddExpenseClaim() {
                     employeeId: 1,
                     projectId: project,
                 }
-
                 dispatch(actions.addExpenseClaim(claim))
             }
             else {
@@ -110,8 +115,12 @@ export default function AddExpenseClaim() {
 
     useEffect(() => {
         dispatch(actions.fetchProjects());
-        console.log(projects);
     }, []);
+
+    useEffect(() =>{
+        if(added)
+        history.goBack()
+    }, [added]);
 
     useEffect(() => {
         if (projects != null) {
@@ -140,13 +149,17 @@ export default function AddExpenseClaim() {
         }
     }, [expenses]);
 
-    useEffect(() => {
+    // useEffect(() => {
+    //     if (claims) {
+    //         history.push("/add");
+    //     }
+    // }, [claims, history]);
 
+    useEffect(() => {
         if (alert) {
             setOpen(false)
             setOpenSnack(true)
         }
-
     }, [alert]);
 
     const handleCloseSnack = () => {
@@ -159,7 +172,18 @@ export default function AddExpenseClaim() {
     }
 
     const changeDateFormat = (date) => {
-        return "0" + (date.getMonth() + 1) + "/" + "0" + date.getDate() + "/" + date.getFullYear();
+        if (((date.getMonth() + 1) < 10) && (date.getDate() < 10)) {
+            return "0" + (date.getMonth() + 1) + "/" + "0" + date.getDate() + "/" + date.getFullYear();
+        }
+        else if (((date.getMonth() + 1) < 10) && (date.getDate() > 9)) {
+            return "0" + (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear();
+        }
+        else if (((date.getMonth() + 1) > 9) && (date.getDate() < 10)) {
+            return (date.getMonth() + 1) + "/" + "0" + date.getDate() + "/" + date.getFullYear();
+        }
+        else {
+            return (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear();
+        }
     }
 
     const handleStartDate = (date) => {
@@ -272,7 +296,7 @@ export default function AddExpenseClaim() {
                             <div className="input-group-prepend">
                                 <span className="input-group-text" id="basic-addon1">Expense Type</span>
                             </div>
-                            <NativeSelect value={expense} name='expense' required onChange={handleChange}>
+                            <NativeSelect fullWidth value={expense} name='expense' required onChange={handleChange}>
                                 <option aria-label="None" value="" >{'None'}</option>
                                 {expenseList}
                             </NativeSelect>
@@ -282,26 +306,24 @@ export default function AddExpenseClaim() {
                             <div className="input-group-prepend">
                                 <span className="input-group-text" id="basic-addon1">Project</span>
                             </div>
-                            <NativeSelect value={project} name='project' required onChange={handleChange}>
+                            <NativeSelect fullWidth value={project} name='project' required onChange={handleChange}>
                                 <option aria-label="None" value="" >{'None'}</option>
                                 {projectList}
                             </NativeSelect>
                         </Grid>
                     </Grid>
-
-                    <Link to="/">
-                        <Button type="submit" variant="contained" color="primary" className={classes.submit} onClick={addExpenseClaim}>Add Expense Claim</Button>
-
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            className={classes.submit}
-                            onClick={handleCancel}
-                        >
-                            Cancel
-                        </Button>
-                    </Link>
-                </form>
+                    
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        className={classes.cancel}
+                        onClick={handleCancel}
+                    >
+                        Cancel
+                    </Button>
+                    <Button type="submit" variant="contained" color="primary" className={classes.add} onClick={addExpenseClaim}>Add Expense Claim</Button>
+                
+                    </form>
             </div>
         </Container>
     )
