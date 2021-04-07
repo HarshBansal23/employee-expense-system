@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { useDispatch,useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import * as actions from '../actions/action';
 import NativeSelect from '@material-ui/core/NativeSelect';
 import Button from '@material-ui/core/Button';
@@ -9,9 +9,20 @@ import TextField from '@material-ui/core/TextField';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
+import { useHistory } from "react-router-dom";
 import {
     Link
-  } from "react-router-dom";
+} from "react-router-dom";
+import DateFnsUtils from '@date-io/date-fns';
+import 'date-fns';
+import {
+    MuiPickersUtilsProvider,
+    KeyboardDatePicker,
+} from '@material-ui/pickers';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -26,11 +37,22 @@ const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(3),
     },
     submit: {
-        margin: theme.spacing(3, 0, 2),
+        margin: theme.spacing(3, 4, 2),
     },
-})); 
+}));
 
-export default function AddExpenseClaim(){
+const validateForm = (errors) => {
+    let valid = true;
+    Object.values(errors).forEach((val) => val.length > 0 && (valid = false));
+    return valid;
+};
+
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
+
+export default function AddExpenseClaim() {
 
     const classes = useStyles();
 
@@ -41,7 +63,7 @@ export default function AddExpenseClaim(){
 
     const expenses = useSelector((state) => state.expenses);
     const [expenseList, setExpenseList] = React.useState();
-    
+
     const dispatch = useDispatch()
 
     const [amount, setAmount] = React.useState(0)
@@ -49,25 +71,41 @@ export default function AddExpenseClaim(){
     const [ed, setEd] = React.useState('')
     const [project, setProject] = React.useState('')
     const [expense, setExpense] = React.useState('')
+    const [openSnack, setOpenSnack] = React.useState(false)
+    const [open, setOpen] = React.useState(false)
 
-    const addExpenseClaim = () =>{
-        console.log("adding")
-        console.log("amount = " + amount)
-        console.log("startdate = " + sd)
-        console.log("enddate = " + ed)
-        console.log("project = " + project)
-        console.log("expense = " + expense)
+    const [errors, setErrors] = React.useState({
+        amount: 0,
+    });
 
-        var claim = {
-            amount: parseInt(amount),
-            startDate: sd,
-            endDate: ed,
-            expenseId: expense,
-            employeeId: 1,
-            projectId: project,
+    const alert = useSelector(state => state.alert)
+
+    const history = useHistory();
+
+    const addExpenseClaim = () => {
+
+        if (validateForm(errors)) {
+            console.log("adding claim....");
+
+            if (amount && sd && ed && expense && project) {
+                setOpen(true)
+                var claim = {
+                    amount: parseInt(amount),
+                    startDate: sd,
+                    endDate: ed,
+                    expenseId: expense,
+                    employeeId: 1,
+                    projectId: project,
+                }
+
+                dispatch(actions.addExpenseClaim(claim))
+            }
+            else {
+                window.alert('Fields cannot be null')
+            }
+        } else {
+            console.error("Invalid Form");
         }
-
-        dispatch(actions.addExpenseClaim(claim))
     }
 
     useEffect(() => {
@@ -76,13 +114,14 @@ export default function AddExpenseClaim(){
     }, []);
 
     useEffect(() => {
-        if(projects != null){
-        let list = projects.map((pro) => {
-            return (
-                <option value={pro.projectCode}>{pro.title}</option>
-            );
-        });
-        setProjectList(list);}
+        if (projects != null) {
+            let list = projects.map((pro) => {
+                return (
+                    <option value={pro.projectCode}>{pro.title}</option>
+                );
+            });
+            setProjectList(list);
+        }
     }, [projects]);
 
     useEffect(() => {
@@ -91,7 +130,7 @@ export default function AddExpenseClaim(){
     }, []);
 
     useEffect(() => {
-        if(expenses != null){
+        if (expenses != null) {
             let eList = expenses.map((exp) => {
                 return (
                     <option value={exp.expenseCode}>{exp.expenseType}</option>
@@ -101,70 +140,149 @@ export default function AddExpenseClaim(){
         }
     }, [expenses]);
 
+    useEffect(() => {
 
-    const changeDateFormat=(date)=>{
-        date = date.split('-')
-        return (date[1]+"/"+date[2]+"/"+date[0])
+        if (alert) {
+            setOpen(false)
+            setOpenSnack(true)
+        }
+
+    }, [alert]);
+
+    const handleCloseSnack = () => {
+        setOpenSnack(false)
     }
 
-    const handleChange = (e) =>{
+    const handleCancel = () => {
+        console.log(history)
+        history.goBack()
+    }
+
+    const changeDateFormat = (date) => {
+        return "0" + (date.getMonth() + 1) + "/" + "0" + date.getDate() + "/" + date.getFullYear();
+    }
+
+    const handleStartDate = (date) => {
+        setSd(changeDateFormat(date));
+    };
+
+    const handleEndDate = (date) => {
+        setEd(changeDateFormat(date));
+    };
+
+    const handleChange = (e) => {
+        var err = errors;
         const { name, value } = e.target;
-        
-        if(name==='amount')
-        setAmount(value)
-        else if(name==='startDate')
-        setSd(changeDateFormat(value))
-        else if(name==='endDate')
-        setEd(changeDateFormat(value))
-        else if(name==='project')
-        setProject(value)
-        else if(name==='expense')
-        setExpense(value)
+        if (name === 'amount') {
+            setAmount(value)
+            err.amount =
+                value >= 0 ? "" : "Amount must be greater than Zero!!!";
+        }
+        else if (name === 'project') {
+            setProject(value)
+        }
+        else if (name === 'expense') {
+            setExpense(value)
+        }
+        setErrors(err);
     }
-    
+
     return (
         <Container component="main" maxWidth="xs">
+            <Snackbar
+                open={openSnack}
+                autoHideDuration={6000}
+                onClose={handleCloseSnack}
+            >
+                <Alert onClose={handleCloseSnack} severity={alert ? alert.type : 'success'}>
+                    {alert ? alert.message : 'sample'}
+                </Alert>
+            </Snackbar>
+            <Backdrop className={classes.backdrop} open={open} >
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <CssBaseline />
             <div className={classes.paper}>
                 <form className={classes.form} noValidate>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
-                            <TextField name="amount" onChange={handleChange}
-                                id="amount"
-                                label="Enter Amount"
-                                type="number"
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                variant="outlined"
-                            />
+                            {errors.amount.length > 0 ? (
+                                <TextField name="amount" onChange={handleChange} fullWidth required
+                                    value={amount}
+                                    error
+                                    id="amount"
+                                    label="Enter Amount"
+                                    type="number"
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                    variant="outlined"
+                                    onChange={handleChange}
+                                    helperText={errors.amount}
+                                />
+                            ) : (
+                                <TextField
+                                    autoComplete="amt"
+                                    name="amount"
+                                    variant="outlined"
+                                    required
+                                    fullWidth
+                                    id="amount"
+                                    label="Expense Amount"
+                                    autoFocus
+                                    onChange={handleChange}
+                                />
+                            )}
                         </Grid>
 
                         <Grid item xs={12}>
                             <Typography>Start Date</Typography>
-                            <input type="date" name="startDate" className="form-control" placeholder="Enter Start Date" onChange={handleChange}/>
-                        </Grid>  
+                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                <KeyboardDatePicker required
+                                    fullWidth
+                                    id="start date"
+                                    value={sd}
+                                    name='startDate'
+                                    onChange={handleStartDate}
+                                    KeyboardButtonProps={{
+                                        'aria-label': 'change date',
+                                    }}
+                                />
+                            </MuiPickersUtilsProvider>
+                        </Grid>
 
                         <Grid item xs={12}>
                             <Typography>End Date</Typography>
-                            <input type="date" name="endDate" className="form-control" placeholder="Enter End Date" onChange={handleChange}/>
+                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                <KeyboardDatePicker required
+                                    minDate={sd}
+                                    fullWidth
+                                    id="end date"
+                                    value={ed}
+                                    name='endDate'
+                                    onChange={handleEndDate}
+                                    KeyboardButtonProps={{
+                                        'aria-label': 'change date',
+                                    }}
+                                />
+                            </MuiPickersUtilsProvider>
                         </Grid>
 
                         <Grid item xs={12}>
                             <div className="input-group-prepend">
                                 <span className="input-group-text" id="basic-addon1">Expense Type</span>
                             </div>
-                            <NativeSelect value={expense} name='expense' onChange={handleChange}>
+                            <NativeSelect value={expense} name='expense' required onChange={handleChange}>
                                 <option aria-label="None" value="" >{'None'}</option>
                                 {expenseList}
                             </NativeSelect>
-                        </Grid>         
+                        </Grid>
 
                         <Grid item xs={12}>
                             <div className="input-group-prepend">
                                 <span className="input-group-text" id="basic-addon1">Project</span>
                             </div>
-                            <NativeSelect value={project} name='project' onChange={handleChange}>
+                            <NativeSelect value={project} name='project' required onChange={handleChange}>
                                 <option aria-label="None" value="" >{'None'}</option>
                                 {projectList}
                             </NativeSelect>
@@ -172,7 +290,16 @@ export default function AddExpenseClaim(){
                     </Grid>
 
                     <Link to="/">
-                        <Button fullWidth variant="contained" color="primary" className={classes.submit} onClick={addExpenseClaim}>Add Expense Claim</Button>
+                        <Button type="submit" variant="contained" color="primary" className={classes.submit} onClick={addExpenseClaim}>Add Expense Claim</Button>
+
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            className={classes.submit}
+                            onClick={handleCancel}
+                        >
+                            Cancel
+                        </Button>
                     </Link>
                 </form>
             </div>
