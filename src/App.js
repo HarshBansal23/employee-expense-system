@@ -15,19 +15,6 @@ import {
 function App() {
   return (
     <Router>
-      <div>
-        {/* <div>
-        <Button color="primary">
-          <Link to="/">View Claims</Link>
-          </Button>
-        </div> */}
-        {/* <div>
-          <Button color="primary">
-            <Link to="/add">
-              <AddBoxIcon></AddBoxIcon>Add Claim</Link>
-          </Button>
-        </div> */}
-      </div>
       <Switch>
         <Route path="/add" component={AddExpenseClaim}>
         </Route>
@@ -40,6 +27,5 @@ function App() {
     </Router>
   );
 }
-
 
 export default App;

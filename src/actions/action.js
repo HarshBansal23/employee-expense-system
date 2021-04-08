@@ -1,5 +1,5 @@
 export const saveExpenseClaim = (claim) => {
-  return { type: "ADD_EXPENSE_CLAIM", payload: {claim, added: true, alert: { type: 'success', message: "Successfully added expense claim!!" } } }
+  return { type: "ADD_EXPENSE_CLAIM", payload: { claim, added: true, alert: { type: 'success', message: "Successfully added expense claim!!" } } }
 }
 
 export const addExpenseClaim = (claim) => {
@@ -195,3 +195,71 @@ export const deleteExpenseClaim = (id) => {
       });
   };
 };
+
+
+export const approveClaim = (id) => {
+  return { type: "APPROVE_CLAIM", payload: { id, alert: { type: 'success', message: 'Approve claim successfully' } } }
+}
+
+export const approvingClaim = (id) => {
+  console.log("claim id : " + id)
+  const requestOptions = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(id)
+  };
+
+  return dispatch => {
+    let code = 0
+    fetch('http://localhost:8081/api/v1/expenseClaim/approve/' + id, requestOptions)
+      .then(res => {
+        console.log(res);
+        code = res.status;
+        if (code !== 200) {
+          return res.text()
+        }
+        dispatch(approveClaim(id));
+      })
+      .then(res => {
+        if (code !== 200)
+          return Promise.reject(res)
+      })
+      .catch((error) => {
+        console.log("error in approving")
+      });
+  }
+}
+
+
+export const rejectClaim = (id) => {
+  return { type: "REJECT_CLAIM", payload: { id, alert: { type: 'success', message: 'Claim Rejected' } } }
+}
+
+export const rejectingClaim = (id) => {
+  console.log("claim id : " + id)
+  const requestOptions = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(id)
+  };
+
+  return dispatch => {
+    let code = 0
+    fetch('http://localhost:8081/api/v1/expenseClaim/reject/' + id, requestOptions)
+      .then(res => {
+        console.log(res);
+        code = res.status;
+        if (code !== 200) {
+          return res.text()
+        }
+        dispatch(rejectClaim(id));
+      })
+      .then(res => {
+        if (code !== 200)
+          return Promise.reject(res)
+      })
+      .catch((error) => {
+        console.log("error in rejecting")
+      });
+  }
+}

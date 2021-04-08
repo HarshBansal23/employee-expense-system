@@ -34,6 +34,9 @@ const useStyles = makeStyles((theme) => ({
         width: '100%',
         marginTop: theme.spacing(3),
     },
+    view: {
+        margin: theme.spacing(2, 4, 2, 1),
+    },
     cancel: {
         margin: theme.spacing(3, 4, 2, 0),
         bottom: 0,
@@ -58,9 +61,9 @@ function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
-export default function EditExpenseClaim({ match }) {
+export default function EditExpenseClaim(props) {
 
-    let id = match.params.id
+    let id = props.id
 
     const classes = useStyles()
 
@@ -90,7 +93,8 @@ export default function EditExpenseClaim({ match }) {
     useEffect(() => {
         if (updated) {
             console.log(history);
-            history.goBack();
+           
+            props.handleCancel()
         }
     }, [updated, history]);
 
@@ -107,7 +111,7 @@ export default function EditExpenseClaim({ match }) {
     }
 
     useEffect(() => {
-        if (alert) {
+        if (alert && alert.type==='error') {
             setOpen(false)
             setOpenSnack(true)
         }
@@ -180,121 +184,131 @@ export default function EditExpenseClaim({ match }) {
 
 
     return (
-        <Container component="main" maxWidth="xs">
-            {alert && (
-                <Snackbar
-                    open={openSnack}
-                    autoHideDuration={6000}
-                    onClose={handleCloseSnack}
-                >
-                    <Alert
+        <div>
+            <div className={classes.view}>
+                <Button color="primary">
+                    <Link to="/">
+                        View Claims
+                    </Link>
+                </Button>
+            </div>
+            <Container component="main" maxWidth="xs">
+                {alert && (
+                    <Snackbar
+                        open={openSnack}
+                        autoHideDuration={6000}
                         onClose={handleCloseSnack}
-                        severity={alert ? alert.type : "success"}
                     >
-                        {alert ? alert.message : "sample"}
-                    </Alert>
-                </Snackbar>
-            )}
-            <Backdrop className={classes.backdrop} open={open}>
-                <CircularProgress color="inherit" />
-            </Backdrop>
-            <CssBaseline />
-            <div className={classes.paper}>
-                <Typography component="h1" variant="h5">
-                    Edit claim
+                        <Alert
+                            onClose={handleCloseSnack}
+                            severity={alert ? alert.type : "success"}
+                        >
+                            {alert ? alert.message : "sample"}
+                        </Alert>
+                    </Snackbar>
+                )}
+                <Backdrop className={classes.backdrop} open={open}>
+                    <CircularProgress color="inherit" />
+                </Backdrop>
+                <CssBaseline />
+                <div className={classes.paper}>
+                    <Typography component="h1" variant="h5">
+                        Edit claim
                 </Typography>
-                <form className={classes.form} noValidate onSubmit={handleSubmit}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                            <TextField name="id" onChange={handleChange} fullWidth required disabled
-                                value={id}
-                                id="id"
-                                type="number"
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            {errors.expenseAmount.length > 0 ? (
-                                <TextField name="expenseAmount" onChange={handleChange} fullWidth required
-                                    value={expenseAmount}
-                                    error
-                                    id="amount"
-                                    label="Enter Amount"
+                    <form className={classes.form} noValidate onSubmit={handleSubmit}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <TextField name="id" onChange={handleChange} fullWidth required disabled
+                                    value={id}
+                                    id="id"
                                     type="number"
                                     InputLabelProps={{
                                         shrink: true,
                                     }}
                                     variant="outlined"
-                                    onChange={handleChange}
-                                    helperText={errors.expenseAmount}
                                 />
-                            ) : (
-                                <TextField
-                                    autoComplete="amt"
-                                    name="expenseAmount"
-                                    variant="outlined"
-                                    required
-                                    fullWidth
-                                    id="expenseAmount"
-                                    label="Expense Amount"
-                                    autoFocus
-                                    onChange={handleChange}
-                                />
-                            )}
-                        </Grid>
+                            </Grid>
+                            <Grid item xs={12}>
+                                {errors.expenseAmount.length > 0 ? (
+                                    <TextField name="expenseAmount" onChange={handleChange} fullWidth required
+                                        value={expenseAmount}
+                                        error
+                                        id="amount"
+                                        label="Enter Amount"
+                                        type="number"
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                        variant="outlined"
+                                        onChange={handleChange}
+                                        helperText={errors.expenseAmount}
+                                    />
+                                ) : (
+                                    <TextField
+                                        autoComplete="amt"
+                                        name="expenseAmount"
+                                        variant="outlined"
+                                        required
+                                        fullWidth
+                                        id="expenseAmount"
+                                        label="Expense Amount"
+                                        autoFocus
+                                        value={expenseAmount}
+                                        onChange={handleChange}
+                                    />
+                                )}
+                            </Grid>
 
-                        <Grid item xs={12}>
-                            <Typography>Start Date</Typography>
-                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                                <KeyboardDatePicker required
-                                    fullWidth
-                                    id="start date"
-                                    value={startDate}
-                                    name='startDate'
-                                    onChange={handleStartDate}
-                                    KeyboardButtonProps={{
-                                        'aria-label': 'change date',
-                                    }}
-                                />
-                            </MuiPickersUtilsProvider>
-                        </Grid>
+                            <Grid item xs={12}>
+                                <Typography>Start Date</Typography>
+                                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                    <KeyboardDatePicker required
+                                        fullWidth
+                                        id="start date"
+                                        value={startDate}
+                                        name='startDate'
+                                        onChange={handleStartDate}
+                                        KeyboardButtonProps={{
+                                            'aria-label': 'change date',
+                                        }}
+                                    />
+                                </MuiPickersUtilsProvider>
+                            </Grid>
 
-                        <Grid item xs={12}>
-                            <Typography>End Date</Typography>
-                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                                <KeyboardDatePicker required
-                                    minDate={startDate}
-                                    fullWidth
-                                    id="end date"
-                                    value={endDate}
-                                    name='endDate'
-                                    onChange={handleEndDate}
-                                    KeyboardButtonProps={{
-                                        'aria-label': 'change date',
-                                    }}
-                                />
-                            </MuiPickersUtilsProvider>
-                        </Grid>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            className={classes.cancel}
-                            onClick={handleCancel}
-                        >
-                            Cancel
+                            <Grid item xs={12}>
+                                <Typography>End Date</Typography>
+                                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                    <KeyboardDatePicker required
+                                        minDate={startDate}
+                                        fullWidth
+                                        id="end date"
+                                        value={endDate}
+                                        name='endDate'
+                                        onChange={handleEndDate}
+                                        KeyboardButtonProps={{
+                                            'aria-label': 'change date',
+                                        }}
+                                    />
+                                </MuiPickersUtilsProvider>
+                            </Grid>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                className={classes.cancel}
+                                onClick={handleCancel}
+                            >
+                                Cancel
                         </Button>
-                        <Button type="submit"
-                            variant="contained"
-                            color="primary"
-                            className={classes.update}
-                            onClick={handleSubmit}
-                        >Update</Button>
-                    </Grid>
-                </form>
-            </div>
-        </Container>
+                            <Button type="submit"
+                                variant="contained"
+                                color="primary"
+                                className={classes.update}
+                                onClick={handleSubmit}
+                            >Update</Button>
+                        </Grid>
+                    </form>
+                </div>
+            </Container>
+        </div>
     )
 }

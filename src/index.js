@@ -6,16 +6,14 @@ import reportWebVitals from './reportWebVitals';
 import {applyMiddleware, createStore} from 'redux'
 import {Provider} from 'react-redux';
 import reducer from "./store/reducer"
+import {createLogger} from 'redux-logger'
 
 import thunk from 'redux-thunk';
 
 
-const logger = (store) => (next) => (action) => {
-  console.log("Action fired", action);
-  next(action);
-}
+const logger = createLogger();
 
-const store = createStore(reducer, applyMiddleware(logger, thunk));
+const store = createStore(reducer, applyMiddleware(logger, thunk)); 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
