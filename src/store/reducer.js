@@ -9,7 +9,6 @@ const reducer = (state = initialState, { type, payload }) => {
     switch (type) {
 
         case "ADD_EXPENSE_CLAIM":
-            // let list = [...state.claims, payload.claim]
             return { alert: payload.alert, added: true };
 
         case "ADD_EXPENSE_CLAIM_FAILED":
@@ -51,7 +50,6 @@ const reducer = (state = initialState, { type, payload }) => {
             return { claims: state.claims, alert: payload.alert };
 
         default:
-            console.log("error eror eror")
             console.log("type = " + type)
             console.log("payload = " + payload)
             return state;

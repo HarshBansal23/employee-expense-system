@@ -1,5 +1,5 @@
 export const saveExpenseClaim = (claim) => {
-  return { type: "ADD_EXPENSE_CLAIM", payload: { claim, added: true, alert: { type: 'success', message: "Successfully added expense claim!!" } } }
+  return { type: "ADD_EXPENSE_CLAIM", payload: { claim, added: true, alert: { type: 'success', message: "Successfully added expense claim" } } }
 }
 
 export const addExpenseClaim = (claim) => {
@@ -159,7 +159,8 @@ export const editClaim = (updateRequest) => {
         if (code !== 204) {
           return res.text()
         }
-        dispatch(updateClaim('UPDATE_CLAIM', { type: 'success', message: 'updated claim successfully' }));
+        dispatch(updateClaim('UPDATE_CLAIM', { type: 'success', message: 'Updated claim successfully' }));
+        dispatch(fetchExpenseClaims());
       })
       .then(res => {
         if (code !== 204)
@@ -198,7 +199,7 @@ export const deleteExpenseClaim = (id) => {
 
 
 export const approveClaim = (id) => {
-  return { type: "APPROVE_CLAIM", payload: { id, alert: { type: 'success', message: 'Approve claim successfully' } } }
+  return { type: "APPROVE_CLAIM", payload: { id, alert: { type: 'success', message: 'Claim Approved successfully' } } }
 }
 
 export const approvingClaim = (id) => {
@@ -219,20 +220,21 @@ export const approvingClaim = (id) => {
           return res.text()
         }
         dispatch(approveClaim(id));
+        dispatch(fetchExpenseClaims());
       })
       .then(res => {
         if (code !== 200)
           return Promise.reject(res)
       })
       .catch((error) => {
-        console.log("error in approving")
+        console.log('Error:', error)
       });
   }
 }
 
 
 export const rejectClaim = (id) => {
-  return { type: "REJECT_CLAIM", payload: { id, alert: { type: 'success', message: 'Claim Rejected' } } }
+  return { type: "REJECT_CLAIM", payload: { id, alert: { type: 'success', message: 'Claim Rejected!' } } }
 }
 
 export const rejectingClaim = (id) => {
@@ -253,13 +255,14 @@ export const rejectingClaim = (id) => {
           return res.text()
         }
         dispatch(rejectClaim(id));
+        dispatch(fetchExpenseClaims());
       })
       .then(res => {
         if (code !== 200)
           return Promise.reject(res)
       })
       .catch((error) => {
-        console.log("error in rejecting")
+        console.log('Error:', error)
       });
   }
 }
